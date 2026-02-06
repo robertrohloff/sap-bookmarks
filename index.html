@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rob's Bookmarks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #bbdefb;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 1rem;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+
+        #searchInput:focus {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            text-align: center;
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            margin: 0 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .category {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: move;
+        }
+
+        .category.top-used {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffffff 100%);
+            border: 2px solid #ffc107;
+        }
+
+        .category.drag-over {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            border: 2px solid #667eea;
+        }
+
+        .category.dragging-category {
+            opacity: 0.5;
+        }
+
+        .category h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category.top-used h2 {
+            color: #ff9800;
+            border-bottom-color: #ffc107;
+        }
+
+        .category-title {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .category-title:hover {
+            opacity: 0.7;
+        }
+
+        .category-title-input {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+            font-family: inherit;
+        }
+
+        .category-title-input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .category-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: transparent;
+            border: none;
+            padding: 0.25rem;
+            margin: 0 0 0 0.5rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .category:hover .category-delete {
+            opacity: 1;
+        }
+
+        .category-delete:hover {
+            color: #dc3545;
+            transform: scale(1.2);
+        }
+
+        .category-count {
+            font-size: 0.9rem;
+            color: #999;
+            font-weight: normal;
+        }
+
+        .bookmark {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border-left: 3px solid #667eea;
+            cursor: move;
+        }
+
+        .category.top-used .bookmark {
+            border-left-color: #ffc107;
+        }
+
+        .bookmark:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .bookmark.dragging {
+            opacity: 0.5;
+        }
+
+        .bookmark-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .bookmark-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .click-count {
+            background: #667eea;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 1.5rem;
+            text-align: center;
+        }
+
+        .category.top-used .click-count {
+            background: #ff9800;
+        }
+
+        .bookmark a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .bookmark a:hover {
+            color: #667eea;
+        }
+
+        .bookmark-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-top: 0.5rem;
+        }
+
+        .bookmark-actions > .btn-icon:not(.btn-star) {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .bookmark:hover .bookmark-actions > .btn-icon:not(.btn-star) {
+            opacity: 1;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            padding: 0.25rem;
+            margin: 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .btn-star {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-star.favorited {
+            opacity: 1;
+            color: #ffc107;
+        }
+
+        .bookmark:hover .btn-star {
+            opacity: 0.3;
+        }
+
+        .bookmark:hover .btn-star.favorited {
+            opacity: 1;
+        }
+
+        .btn-delete:hover {
+            color: #dc3545;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .category-checkbox {
+            display: block;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .category-checkbox input {
+            margin-right: 0.5rem;
+        }
+
+        .tab.dragging {
+            opacity: 0.5;
+        }
+
+        .tab.drag-over-tab {
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .group-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .tab:hover .group-delete {
+            opacity: 1;
+        }
+
+        .group-delete:hover {
+            color: #dc3545;
+            transform: scale(1.2);
+        }
+
+        .admin-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .admin-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-top: 0.5rem;
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .admin-dropdown.show {
+            display: block;
+        }
+
+        .admin-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            margin: 0;
+            border-radius: 0;
+            background: transparent;
+            color: #667eea;
+            box-shadow: none;
+        }
+
+        .admin-dropdown button:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .admin-dropdown button:last-child {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .admin-dropdown button:hover {
+            background: #f8f9fa;
+            transform: none;
+        }
+
+        .undo-notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            color: #667eea;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        .undo-notification.show {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .undo-notification button {
+            padding: 0.5rem 1rem;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Rob's Bookmarks</h1>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search bookmarks...">
+            </div>
+            <div class="stats" id="stats"></div>
+        </header>
+
+        <div class="controls">
+            <div class="admin-menu">
+                <button onclick="toggleAdminMenu()">⚙️ Admin</button>
+                <div class="admin-dropdown" id="adminDropdown">
+                    <button onclick="openImportModal(); closeAdminMenu()">📥 Import Bookmarks</button>
+                    <button onclick="clearAllClickCounts(); closeAdminMenu()">🔄 Clear Click Counts</button>
+                </div>
+            </div>
+            <button onclick="openAddModal()">➕ Add Bookmark</button>
+            <button onclick="openCategoryModal()">📁 Add Category</button>
+            <button onclick="openGroupModal()">🗂️ Add Group</button>
+            <button onclick="toggleFavoritesView()">⭐ Favorites</button>
+            <button onclick="performUndo()" id="undoButton" disabled>↩️ Undo</button>
+        </div>
+
+        <div class="tabs-container" id="tabsContainer"></div>
+
+        <div class="categories" id="bookmarksContainer"></div>
+    </div>
+
+    <!-- Undo Notification -->
+    <div class="undo-notification" id="undoNotification">
+        <span id="undoMessage"></span>
+        <button onclick="performUndo()">Undo</button>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Bookmarks</h2>
+            <form id="importForm">
+                <div class="form-group">
+                    <label>Select HTML Bookmark File</label>
+                    <input type="file" id="importFile" accept=".html,.htm" required>
+                </div>
+                <div class="form-group">
+                    <label>Import Options</label>
+                    <div style="margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; margin-bottom: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="importOption" value="replace" checked style="margin-right: 0.5rem; width: auto;">
+                            <span>Replace all existing bookmarks</span>
+                        </label>
+                        <label style="display: flex; align-items: center; margin-bottom: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="importOption" value="merge" style="margin-right: 0.5rem; width: auto;">
+                            <span>Add to a new group called "Imported"</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" onclick="closeImportModal()">Cancel</button>
+                    <button type="submit">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Bookmark Modal -->
+    <div id="bookmarkModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Bookmark</h2>
+            <form id="bookmarkForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="bookmarkTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" id="bookmarkUrl" required>
+                </div>
+                <div class="form-group">
+                    <label>Description (optional)</label>
+                    <textarea id="bookmarkDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="bookmarkCategory" required></select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h2>Add Category</h2>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" id="categoryName" required>
+                </div>
+                <div class="form-group">
+                    <label>Add to Group</label>
+                    <select id="categoryGroup" required></select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" onclick="closeCategoryModal()">Cancel</button>
+                    <button type="submit">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Groups Modal -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <h2>Add Group</h2>
+            <div class="form-group">
+                <label>Create New Group</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="newGroupName" placeholder="Group name">
+                    <button onclick="createGroup()">Create</button>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <p style="color: #6c757d; margin: 0; font-size: 0.9rem;">
+                    💡 <strong>Tip:</strong> After creating a group, drag category boxes onto the group tabs to organize them.
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="closeGroupModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        let categories = JSON.parse(localStorage.getItem('categories')) || ['Work', 'Personal', 'Learning', 'Entertainment'];
+        let groups = JSON.parse(localStorage.getItem('groups')) || {
+            'All': categories.slice()
+        };
+        let editingIndex = null;
+        let currentTab = 'All';
+        let showingFavoritesOnly = false;
+
+        // Drag and drop variables
+        let draggedBookmark = null;
+        let draggedBookmarkIndex = null;
+        let draggedTab = null;
+        let draggedCategory = null;
+
+        // Undo functionality
+        let undoStack = [];
+        const MAX_UNDO_STACK = 20;
+
+        function saveData() {
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            localStorage.setItem('categories', JSON.stringify(categories));
+            localStorage.setItem('groups', JSON.stringify(groups));
+        }
+
+        function saveStateForUndo(action, message) {
+            undoStack.push({
+                action: action,
+                message: message,
+                bookmarks: JSON.parse(JSON.stringify(bookmarks)),
+                categories: JSON.parse(JSON.stringify(categories)),
+                groups: JSON.parse(JSON.stringify(groups)),
+                currentTab: currentTab
+            });
+            
+            // Limit stack size
+            if (undoStack.length > MAX_UNDO_STACK) {
+                undoStack.shift();
+            }
+            
+            // Enable undo button
+            updateUndoButton();
+        }
+
+        function updateUndoButton() {
+            const undoButton = document.getElementById('undoButton');
+            if (undoButton) {
+                undoButton.disabled = undoStack.length === 0;
+            }
+        }
+
+        function showUndoNotification(message) {
+            const notification = document.getElementById('undoNotification');
+            const messageEl = document.getElementById('undoMessage');
+            
+            messageEl.textContent = message;
+            notification.classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function performUndo() {
+            if (undoStack.length === 0) return;
+            
+            const state = undoStack.pop();
+            bookmarks = state.bookmarks;
+            categories = state.categories;
+            groups = state.groups;
+            currentTab = state.currentTab;
+            
+            saveData();
+            renderTabs();
+            renderBookmarks();
+            
+            // Hide notification
+            document.getElementById('undoNotification').classList.remove('show');
+            
+            // Update button state
+            updateUndoButton();
+        }
+
+        function updateStats() {
+            const total = bookmarks.length;
+            const favorites = bookmarks.filter(b => b.favorite).length;
+            const totalClicks = bookmarks.reduce((sum, b) => sum + (b.clickCount || 0), 0);
+            
+            document.getElementById('stats').textContent = 
+                `${total} bookmarks • ${favorites} favorites • ${totalClicks} total clicks`;
+        }
+
+        function trackClick(index) {
+            bookmarks[index].clickCount = (bookmarks[index].clickCount || 0) + 1;
+            saveData();
+            renderBookmarks();
+        }
+
+        function toggleFavorite(index, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            bookmarks[index].favorite = !bookmarks[index].favorite;
+            saveData();
+            if (showingFavoritesOnly) {
+                renderBookmarks(bookmarks.filter(b => b.favorite));
+            } else {
+                renderBookmarks();
+            }
+        }
+
+        function toggleFavoritesView() {
+            showingFavoritesOnly = !showingFavoritesOnly;
+            if (showingFavoritesOnly) {
+                renderBookmarks(bookmarks.filter(b => b.favorite));
+            } else {
+                renderBookmarks();
+            }
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = '';
+            
+            Object.keys(groups).sort().forEach((groupName, index) => {
+                const tab = document.createElement('div');
+                tab.className = `tab ${currentTab === groupName ? 'active' : ''}`;
+                tab.draggable = true;
+                
+                // Create tab content with delete button
+                const tabText = document.createElement('span');
+                tabText.textContent = groupName;
+                tab.appendChild(tabText);
+                
+                if (groupName !== 'All') {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'group-delete';
+                    deleteBtn.innerHTML = '🗑️';
+                    deleteBtn.title = 'Delete Group';
+                    deleteBtn.onclick = (e) => deleteGroup(groupName, e);
+                    tab.appendChild(deleteBtn);
+                }
+                
+                tab.onclick = (e) => {
+                    // Don't switch tabs if clicking delete button
+                    if (e.target.classList.contains('group-delete')) return;
+                    currentTab = groupName;
+                    renderTabs();
+                    renderBookmarks();
+                };
+                
+                // Drag and drop for tabs (reordering groups)
+                tab.ondragstart = (e) => {
+                    draggedTab = groupName;
+                    tab.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                };
+                
+                tab.ondragend = (e) => {
+                    tab.classList.remove('dragging');
+                    draggedTab = null;
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over-tab'));
+                };
+                
+                tab.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                };
+                
+                tab.ondragenter = (e) => {
+                    if ((draggedTab && draggedTab !== groupName) || draggedCategory) {
+                        tab.classList.add('drag-over-tab');
+                    }
+                };
+                
+                tab.ondragleave = (e) => {
+                    tab.classList.remove('drag-over-tab');
+                };
+                
+                tab.ondrop = (e) => {
+                    e.preventDefault();
+                    tab.classList.remove('drag-over-tab');
+                    
+                    // Handle category drop onto group tab
+                    if (draggedCategory) {
+                        // Remove category from all groups
+                        Object.keys(groups).forEach(g => {
+                            groups[g] = groups[g].filter(c => c !== draggedCategory);
+                        });
+                        // Add to this group
+                        if (!groups[groupName].includes(draggedCategory)) {
+                            groups[groupName].push(draggedCategory);
+                        }
+                        saveData();
+                        renderTabs();
+                        renderBookmarks();
+                        return;
+                    }
+                    
+                    // Handle tab reordering
+                    if (draggedTab && draggedTab !== groupName) {
+                        // Reorder groups
+                        const groupKeys = Object.keys(groups);
+                        const draggedIndex = groupKeys.indexOf(draggedTab);
+                        const targetIndex = groupKeys.indexOf(groupName);
+                        
+                        const newGroups = {};
+                        const draggedGroup = [draggedTab, groups[draggedTab]];
+                        
+                        groupKeys.forEach((key, i) => {
+                            if (i === draggedIndex) return;
+                            if (i === targetIndex) {
+                                if (draggedIndex < targetIndex) {
+                                    newGroups[key] = groups[key];
+                                    newGroups[draggedGroup[0]] = draggedGroup[1];
+                                } else {
+                                    newGroups[draggedGroup[0]] = draggedGroup[1];
+                                    newGroups[key] = groups[key];
+                                }
+                            } else {
+                                newGroups[key] = groups[key];
+                            }
+                        });
+                        
+                        groups = newGroups;
+                        saveData();
+                        renderTabs();
+                    }
+                };
+                
+                container.appendChild(tab);
+            });
+        }
+
+        function renderBookmarks(filteredBookmarks = null) {
+            const container = document.getElementById('bookmarksContainer');
+            container.innerHTML = '';
+            
+            let toDisplay = filteredBookmarks || bookmarks;
+            
+            // Filter by current tab
+            let groupCategories = groups[currentTab] || [];
+            if (currentTab !== 'All') {
+                toDisplay = toDisplay.filter(b => groupCategories.includes(b.category));
+            }
+            
+            // Create Top 10 most clicked bookmarks
+            const topClicked = [...bookmarks]
+                .filter(b => (b.clickCount || 0) > 0)
+                .sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0))
+                .slice(0, 10);
+            
+            if (topClicked.length > 0) {
+                const topDiv = document.createElement('div');
+                topDiv.className = 'category top-used';
+                
+                let html = `<h2><span class="category-title">⭐ Top 10 Most Clicked</span> <span class="category-count">(${topClicked.length})</span></h2>`;
+                
+                topClicked.forEach((bookmark, idx) => {
+                    const originalIndex = bookmarks.indexOf(bookmark);
+                    const bookmarkId = `bookmark-top-${idx}`;
+                    html += `
+                        <div class="bookmark" id="${bookmarkId}" draggable="true">
+                            <div class="bookmark-header">
+                                <div>
+                                    <a href="${bookmark.url}" target="_blank" onclick="trackClick(${originalIndex})">${bookmark.title}</a>
+                                </div>
+                                <div class="bookmark-actions">
+                                    <button class="btn-icon" onclick="editBookmark(${originalIndex})" title="Edit">✏️</button>
+                                    <button class="btn-icon btn-delete" onclick="deleteBookmark(${originalIndex})" title="Delete">🗑️</button>
+                                    <button class="btn-icon btn-star ${bookmark.favorite ? 'favorited' : ''}" onclick="toggleFavorite(${originalIndex}, event)" title="${bookmark.favorite ? 'Unfavorite' : 'Favorite'}">${bookmark.favorite ? '★' : '☆'}</button>
+                                    <span class="click-count">${bookmark.clickCount}</span>
+                                </div>
+                            </div>
+                            ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                topDiv.innerHTML = html;
+                
+                // Add drag listeners to bookmarks in Top 10
+                topClicked.forEach((bookmark, idx) => {
+                    const originalIndex = bookmarks.indexOf(bookmark);
+                    const bookmarkEl = topDiv.querySelector(`#bookmark-top-${idx}`);
+                    
+                    bookmarkEl.ondragstart = (e) => {
+                        draggedBookmark = bookmark;
+                        draggedBookmarkIndex = originalIndex;
+                        bookmarkEl.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.stopPropagation();
+                    };
+                    
+                    bookmarkEl.ondragend = (e) => {
+                        bookmarkEl.classList.remove('dragging');
+                        draggedBookmark = null;
+                        draggedBookmarkIndex = null;
+                        document.querySelectorAll('.category').forEach(cat => {
+                            cat.classList.remove('drag-over');
+                        });
+                    };
+                });
+                
+                container.appendChild(topDiv);
+            }
+            
+            // Group by category
+            const groupedBookmarks = {};
+            toDisplay.forEach((bookmark, originalIndex) => {
+                if (!groupedBookmarks[bookmark.category]) {
+                    groupedBookmarks[bookmark.category] = [];
+                }
+                groupedBookmarks[bookmark.category].push({
+                    ...bookmark,
+                    originalIndex: bookmarks.indexOf(bookmark)
+                });
+            });
+            
+            // Sort categories and render
+            Object.keys(groupedBookmarks).sort().forEach(category => {
+                const categoryBookmarks = groupedBookmarks[category];
+                const totalClicks = categoryBookmarks.reduce((sum, b) => sum + (b.clickCount || 0), 0);
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category`;
+                categoryDiv.dataset.category = category;
+                categoryDiv.draggable = true;
+                
+                // Drag category box to reorganize into groups
+                categoryDiv.ondragstart = (e) => {
+                    // Only drag category if clicking on the category itself (not a bookmark)
+                    // Check if the drag started from a bookmark element
+                    if (e.target.closest('.bookmark')) {
+                        return; // Let the bookmark handle its own drag
+                    }
+                    draggedCategory = category;
+                    categoryDiv.classList.add('dragging-category');
+                    e.dataTransfer.effectAllowed = 'move';
+                };
+                
+                categoryDiv.ondragend = (e) => {
+                    categoryDiv.classList.remove('dragging-category');
+                    draggedCategory = null;
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over-tab'));
+                };
+                
+                // Drag and drop for bookmarks onto categories
+                categoryDiv.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                };
+                
+                categoryDiv.ondragenter = (e) => {
+                    if (draggedBookmark && draggedBookmark.category !== category) {
+                        categoryDiv.classList.add('drag-over');
+                    }
+                };
+                
+                categoryDiv.ondragleave = (e) => {
+                    if (e.target === categoryDiv) {
+                        categoryDiv.classList.remove('drag-over');
+                    }
+                };
+                
+                categoryDiv.ondrop = (e) => {
+                    e.preventDefault();
+                    categoryDiv.classList.remove('drag-over');
+                    
+                    if (draggedBookmark && draggedBookmark.category !== category) {
+                        bookmarks[draggedBookmarkIndex].category = category;
+                        saveData();
+                        renderBookmarks();
+                    }
+                };
+                
+                let html = `<h2><span class="category-title" onclick="renameCategory('${category}', this)">${category}</span> <span class="category-count">(${groupedBookmarks[category].length})</span><button class="category-delete btn-icon" onclick="deleteCategory('${category}', event)" title="Delete Category">🗑️</button></h2>`;
+                
+                groupedBookmarks[category].forEach(bookmark => {
+                    const bookmarkId = `bookmark-${bookmark.originalIndex}`;
+                    html += `
+                        <div class="bookmark" id="${bookmarkId}" draggable="true">
+                            <div class="bookmark-header">
+                                <div>
+                                    <a href="${bookmark.url}" target="_blank" onclick="trackClick(${bookmark.originalIndex})">${bookmark.title}</a>
+                                </div>
+                                <div class="bookmark-actions">
+                                    <button class="btn-icon" onclick="editBookmark(${bookmark.originalIndex})" title="Edit">✏️</button>
+                                    <button class="btn-icon btn-delete" onclick="deleteBookmark(${bookmark.originalIndex})" title="Delete">🗑️</button>
+                                    <button class="btn-icon btn-star ${bookmark.favorite ? 'favorited' : ''}" onclick="toggleFavorite(${bookmark.originalIndex}, event)" title="${bookmark.favorite ? 'Unfavorite' : 'Favorite'}">${bookmark.favorite ? '★' : '☆'}</button>
+                                    ${(bookmark.clickCount || 0) > 0 ? `<span class="click-count">${bookmark.clickCount}</span>` : ''}
+                                </div>
+                            </div>
+                            ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                categoryDiv.innerHTML = html;
+                
+                // Add drag listeners to bookmarks after rendering
+                groupedBookmarks[category].forEach(bookmark => {
+                    const bookmarkEl = categoryDiv.querySelector(`#bookmark-${bookmark.originalIndex}`);
+                    
+                    bookmarkEl.ondragstart = (e) => {
+                        draggedBookmark = bookmark;
+                        draggedBookmarkIndex = bookmark.originalIndex;
+                        bookmarkEl.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.stopPropagation(); // Prevent category from being dragged
+                    };
+                    
+                    bookmarkEl.ondragend = (e) => {
+                        bookmarkEl.classList.remove('dragging');
+                        draggedBookmark = null;
+                        draggedBookmarkIndex = null;
+                        document.querySelectorAll('.category').forEach(cat => {
+                            cat.classList.remove('drag-over');
+                        });
+                    };
+                });
+                
+                container.appendChild(categoryDiv);
+            });
+            
+            updateStats();
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                if (showingFavoritesOnly) {
+                    renderBookmarks(bookmarks.filter(b => b.favorite));
+                } else {
+                    renderBookmarks();
+                }
+                return;
+            }
+            
+            let filtered = bookmarks.filter(bookmark => 
+                bookmark.title.toLowerCase().includes(searchTerm) ||
+                bookmark.description.toLowerCase().includes(searchTerm) ||
+                bookmark.url.toLowerCase().includes(searchTerm) ||
+                bookmark.category.toLowerCase().includes(searchTerm)
+            );
+
+            if (showingFavoritesOnly) {
+                filtered = filtered.filter(b => b.favorite);
+            }
+            
+            renderBookmarks(filtered);
+        });
+
+        // Modal functions
+        function openAddModal() {
+            editingIndex = null;
+            document.getElementById('modalTitle').textContent = 'Add Bookmark';
+            document.getElementById('bookmarkForm').reset();
+            updateCategorySelect();
+            document.getElementById('bookmarkModal').classList.add('active');
+        }
+
+        function editBookmark(index) {
+            editingIndex = index;
+            const bookmark = bookmarks[index];
+            
+            document.getElementById('modalTitle').textContent = 'Edit Bookmark';
+            document.getElementById('bookmarkTitle').value = bookmark.title;
+            document.getElementById('bookmarkUrl').value = bookmark.url;
+            document.getElementById('bookmarkDescription').value = bookmark.description || '';
+            updateCategorySelect();
+            document.getElementById('bookmarkCategory').value = bookmark.category;
+            document.getElementById('bookmarkModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('bookmarkModal').classList.remove('active');
+        }
+
+        function updateCategorySelect() {
+            const select = document.getElementById('bookmarkCategory');
+            const sortedCategories = [...categories].sort();
+            select.innerHTML = sortedCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        }
+
+        document.getElementById('bookmarkForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const bookmark = {
+                title: document.getElementById('bookmarkTitle').value,
+                url: document.getElementById('bookmarkUrl').value,
+                description: document.getElementById('bookmarkDescription').value,
+                category: document.getElementById('bookmarkCategory').value,
+                favorite: editingIndex !== null ? bookmarks[editingIndex].favorite : false,
+                clickCount: editingIndex !== null ? bookmarks[editingIndex].clickCount : 0
+            };
+            
+            if (editingIndex !== null) {
+                bookmarks[editingIndex] = bookmark;
+            } else {
+                bookmarks.push(bookmark);
+            }
+            
+            saveData();
+            if (showingFavoritesOnly) {
+                renderBookmarks(bookmarks.filter(b => b.favorite));
+            } else {
+                renderBookmarks();
+            }
+            closeModal();
+        });
+
+        function deleteBookmark(index) {
+            if (confirm('Are you sure you want to delete this bookmark?')) {
+                const bookmark = bookmarks[index];
+                saveStateForUndo('delete_bookmark', `Deleted "${bookmark.title}"`);
+                
+                bookmarks.splice(index, 1);
+                saveData();
+                if (showingFavoritesOnly) {
+                    renderBookmarks(bookmarks.filter(b => b.favorite));
+                } else {
+                    renderBookmarks();
+                }
+                
+                showUndoNotification(`Deleted "${bookmark.title}"`);
+            }
+        }
+
+        function renameCategory(oldName, titleElement) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'category-title-input';
+            input.value = oldName;
+            
+            // Replace the title text with input
+            const textNode = titleElement.firstChild;
+            titleElement.replaceChild(input, textNode);
+            input.focus();
+            input.select();
+            
+            function saveRename() {
+                const newName = input.value.trim();
+                
+                if (newName && newName !== oldName) {
+                    // Check if category name already exists
+                    if (categories.includes(newName) && newName !== oldName) {
+                        alert('A category with this name already exists!');
+                        titleElement.replaceChild(document.createTextNode(oldName), input);
+                        return;
+                    }
+                    
+                    saveStateForUndo('rename_category', `Renamed "${oldName}" to "${newName}"`);
+                    
+                    // Update category in categories array
+                    const categoryIndex = categories.indexOf(oldName);
+                    if (categoryIndex !== -1) {
+                        categories[categoryIndex] = newName;
+                    }
+                    
+                    // Update all bookmarks with this category
+                    bookmarks.forEach(bookmark => {
+                        if (bookmark.category === oldName) {
+                            bookmark.category = newName;
+                        }
+                    });
+                    
+                    // Update groups
+                    Object.keys(groups).forEach(groupName => {
+                        const catIndex = groups[groupName].indexOf(oldName);
+                        if (catIndex !== -1) {
+                            groups[groupName][catIndex] = newName;
+                        }
+                    });
+                    
+                    saveData();
+                    renderBookmarks();
+                    renderTabs();
+                    
+                    showUndoNotification(`Renamed "${oldName}" to "${newName}"`);
+                } else {
+                    // Restore original name if empty or unchanged
+                    titleElement.replaceChild(document.createTextNode(oldName), input);
+                }
+            }
+            
+            input.onblur = saveRename;
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    input.blur();
+                } else if (e.key === 'Escape') {
+                    titleElement.replaceChild(document.createTextNode(oldName), input);
+                }
+            };
+        }
+
+        function deleteCategory(categoryName, event) {
+            event.stopPropagation(); // Prevent triggering rename
+            
+            const bookmarksInCategory = bookmarks.filter(b => b.category === categoryName);
+            
+            let confirmMessage = `Are you sure you want to delete the "${categoryName}" category?`;
+            if (bookmarksInCategory.length > 0) {
+                confirmMessage += `\n\nThis will also delete ${bookmarksInCategory.length} bookmark(s) in this category.`;
+            }
+            
+            if (confirm(confirmMessage)) {
+                saveStateForUndo('delete_category', `Deleted category "${categoryName}"`);
+                
+                // Remove all bookmarks in this category
+                bookmarks = bookmarks.filter(b => b.category !== categoryName);
+                
+                // Remove category from categories array
+                const categoryIndex = categories.indexOf(categoryName);
+                if (categoryIndex !== -1) {
+                    categories.splice(categoryIndex, 1);
+                }
+                
+                // Remove category from all groups
+                Object.keys(groups).forEach(groupName => {
+                    groups[groupName] = groups[groupName].filter(c => c !== categoryName);
+                });
+                
+                saveData();
+                renderBookmarks();
+                renderTabs();
+                
+                showUndoNotification(`Deleted category "${categoryName}"`);
+            }
+        }
+
+        function deleteGroup(groupName, event) {
+            event.stopPropagation(); // Prevent triggering tab click
+            
+            if (groupName === 'All') {
+                alert('Cannot delete the "All" group.');
+                return;
+            }
+            
+            const categoriesInGroup = groups[groupName] || [];
+            
+            let confirmMessage = `Are you sure you want to delete the "${groupName}" group?`;
+            if (categoriesInGroup.length > 0) {
+                confirmMessage += `\n\nThe ${categoriesInGroup.length} categor${categoriesInGroup.length === 1 ? 'y' : 'ies'} in this group will be moved to the "All" group.`;
+            }
+            
+            if (confirm(confirmMessage)) {
+                saveStateForUndo('delete_group', `Deleted group "${groupName}"`);
+                
+                // Move categories to "All" group
+                if (categoriesInGroup.length > 0) {
+                    categoriesInGroup.forEach(cat => {
+                        if (!groups['All'].includes(cat)) {
+                            groups['All'].push(cat);
+                        }
+                    });
+                }
+                
+                // Delete the group
+                delete groups[groupName];
+                
+                // Switch to "All" tab if we're deleting the current tab
+                if (currentTab === groupName) {
+                    currentTab = 'All';
+                }
+                
+                saveData();
+                renderTabs();
+                renderBookmarks();
+                
+                showUndoNotification(`Deleted group "${groupName}"`);
+            }
+        }
+
+        // Category modal
+        function openCategoryModal() {
+            document.getElementById('categoryForm').reset();
+            updateGroupSelect();
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+        }
+
+        function updateGroupSelect() {
+            const select = document.getElementById('categoryGroup');
+            const groupNames = Object.keys(groups).sort();
+            select.innerHTML = groupNames.map(group => `<option value="${group}">${group}</option>`).join('');
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const categoryName = document.getElementById('categoryName').value;
+            const groupName = document.getElementById('categoryGroup').value;
+            
+            if (!categories.includes(categoryName)) {
+                categories.push(categoryName);
+                if (!groups[groupName].includes(categoryName)) {
+                    groups[groupName].push(categoryName);
+                }
+                saveData();
+                renderBookmarks();
+                renderTabs();
+            }
+            
+            closeCategoryModal();
+        });
+
+        // Group management
+        function openGroupModal() {
+            document.getElementById('newGroupName').value = '';
+            document.getElementById('groupModal').classList.add('active');
+        }
+
+        function closeGroupModal() {
+            document.getElementById('groupModal').classList.remove('active');
+        }
+
+        function createGroup() {
+            const groupName = document.getElementById('newGroupName').value.trim();
+            if (groupName && !groups[groupName]) {
+                groups[groupName] = [];
+                document.getElementById('newGroupName').value = '';
+                saveData();
+                renderTabs();
+                alert(`Group "${groupName}" created! Drag category boxes onto the "${groupName}" tab to add categories.`);
+            } else if (groups[groupName]) {
+                alert('A group with this name already exists.');
+            }
+        }
+
+        // Admin menu
+        function toggleAdminMenu() {
+            const dropdown = document.getElementById('adminDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function closeAdminMenu() {
+            const dropdown = document.getElementById('adminDropdown');
+            dropdown.classList.remove('show');
+        }
+
+        // Close admin menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const adminMenu = document.querySelector('.admin-menu');
+            if (adminMenu && !adminMenu.contains(event.target)) {
+                closeAdminMenu();
+            }
+        });
+
+        function clearAllClickCounts() {
+            if (confirm('Are you sure you want to reset all click counts to 0? This cannot be undone.')) {
+                saveStateForUndo('clear_clicks', 'Cleared all click counts');
+                
+                bookmarks.forEach(bookmark => {
+                    bookmark.clickCount = 0;
+                });
+                
+                saveData();
+                renderBookmarks();
+                
+                showUndoNotification('Cleared all click counts');
+            }
+        }
+
+        // Import functionality
+        function openImportModal() {
+            document.getElementById('importForm').reset();
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        document.getElementById('importForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            const importOption = document.querySelector('input[name="importOption"]:checked').value;
+            
+            if (!file) {
+                alert('Please select a file to import.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const htmlContent = event.target.result;
+                    const importedBookmarks = parseBookmarkHTML(htmlContent);
+                    
+                    if (importedBookmarks.length === 0) {
+                        alert('No bookmarks found in the file.');
+                        return;
+                    }
+                    
+                    // Save state for undo
+                    saveStateForUndo('import', `Imported ${importedBookmarks.length} bookmarks`);
+                    
+                    if (importOption === 'replace') {
+                        // Replace all bookmarks
+                        bookmarks = importedBookmarks;
+                        
+                        // Rebuild categories from imported bookmarks
+                        const newCategories = [...new Set(importedBookmarks.map(b => b.category))];
+                        categories = newCategories;
+                        
+                        // Reset groups to just "All"
+                        groups = {
+                            'All': newCategories.slice()
+                        };
+                        
+                        currentTab = 'All';
+                    } else {
+                        // Add to "Imported" group
+                        bookmarks = bookmarks.concat(importedBookmarks);
+                        
+                        // Get unique categories from imported bookmarks
+                        const importedCategories = [...new Set(importedBookmarks.map(b => b.category))];
+                        
+                        // Add new categories
+                        importedCategories.forEach(cat => {
+                            if (!categories.includes(cat)) {
+                                categories.push(cat);
+                            }
+                        });
+                        
+                        // Create or update "Imported" group
+                        if (!groups['Imported']) {
+                            groups['Imported'] = [];
+                        }
+                        importedCategories.forEach(cat => {
+                            if (!groups['Imported'].includes(cat)) {
+                                groups['Imported'].push(cat);
+                            }
+                        });
+                        
+                        currentTab = 'Imported';
+                    }
+                    
+                    saveData();
+                    renderTabs();
+                    renderBookmarks();
+                    closeImportModal();
+                    
+                    showUndoNotification(`Imported ${importedBookmarks.length} bookmarks`);
+                    alert(`Successfully imported ${importedBookmarks.length} bookmarks!`);
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('Error parsing bookmark file. Please make sure it\'s a valid HTML bookmark file.');
+                }
+            };
+            
+            reader.readAsText(file);
+        });
+
+        function parseBookmarkHTML(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const bookmarks = [];
+            
+            // Find all bookmark links
+            const links = doc.querySelectorAll('a[href]');
+            
+            links.forEach(link => {
+                const url = link.getAttribute('href');
+                const title = link.textContent.trim();
+                
+                // Skip empty or invalid bookmarks
+                if (!url || !title || url.startsWith('javascript:')) {
+                    return;
+                }
+                
+                // Find the category by looking at parent H3 elements
+                let category = 'Imported';
+                let parent = link.parentElement;
+                
+                // Traverse up to find the nearest H3 (category name)
+                while (parent && parent !== doc.body) {
+                    const h3 = parent.querySelector('h3');
+                    if (h3) {
+                        category = h3.textContent.trim();
+                        break;
+                    }
+                    // Also check previous siblings for H3
+                    let sibling = parent.previousElementSibling;
+                    while (sibling) {
+                        if (sibling.tagName === 'H3') {
+                            category = sibling.textContent.trim();
+                            break;
+                        }
+                        sibling = sibling.previousElementSibling;
+                    }
+                    if (category !== 'Imported') break;
+                    parent = parent.parentElement;
+                }
+                
+                bookmarks.push({
+                    title: title,
+                    url: url,
+                    description: '',
+                    category: category,
+                    favorite: false,
+                    clickCount: 0
+                });
+            });
+            
+            return bookmarks;
+        }
+
+        // Initialize
+        renderTabs();
+        renderBookmarks();
+        updateUndoButton();
+    </script>
+</body>
+</html>
